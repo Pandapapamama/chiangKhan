@@ -1,0 +1,502 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>เดินเล่นเชียงคาน</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Itim&display=swap">
+<style>
+/* Layout: single-column app — sticky header, origin toggle, schematic river-map, destination chips, day-grouped stop cards */
+:root{
+  --bg:#f4f5ef; --surface:#ffffff; --surface-2:#faf9f4;
+  --fg:#273029; --muted:#6a776d; --faint:#97a299;
+  --border:#e4e7de; --border-strong:#d7dccf;
+  --primary:#0f8a76; --primary-ink:#0c6e5e; --primary-soft:#d6ece5;
+  --c-food:#c47a2e; --c-food-soft:#f6e7d1;
+  --c-cafe:#2b9c8a; --c-cafe-soft:#d5ece7;
+  --c-mookata:#cc5636; --c-mookata-soft:#f7ded4;
+  --c-walk:#bd6281; --c-walk-soft:#f3dde4;
+  --shadow:0 1px 2px rgba(39,48,41,.05),0 10px 26px -14px rgba(39,48,41,.22);
+  --shadow-sm:0 1px 2px rgba(39,48,41,.06);
+  --ring:0 0 0 3px rgba(15,138,118,.28);
+  --river:#bfe0e4;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121813; --surface:#1b231d; --surface-2:#202a22;
+  --fg:#eaefe7; --muted:#9dab9f; --faint:#7f8d81;
+  --border:#2b352d; --border-strong:#36423a;
+  --primary:#53c6ab; --primary-ink:#7ad6bf; --primary-soft:#1c342e;
+  --c-food:#e0a35a; --c-food-soft:#36291a;
+  --c-cafe:#4ec1ac; --c-cafe-soft:#163029;
+  --c-mookata:#e67a58; --c-mookata-soft:#38211a;
+  --c-walk:#dc8aa5; --c-walk-soft:#331f28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 30px -16px rgba(0,0,0,.6);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --ring:0 0 0 3px rgba(83,198,171,.3);
+  --river:#1f3b3d;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121813; --surface:#1b231d; --surface-2:#202a22;
+  --fg:#eaefe7; --muted:#9dab9f; --faint:#7f8d81;
+  --border:#2b352d; --border-strong:#36423a;
+  --primary:#53c6ab; --primary-ink:#7ad6bf; --primary-soft:#1c342e;
+  --c-food:#e0a35a; --c-food-soft:#36291a;
+  --c-cafe:#4ec1ac; --c-cafe-soft:#163029;
+  --c-mookata:#e67a58; --c-mookata-soft:#38211a;
+  --c-walk:#dc8aa5; --c-walk-soft:#331f28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 30px -16px rgba(0,0,0,.6);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --ring:0 0 0 3px rgba(83,198,171,.3);
+  --river:#1f3b3d;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);
+  font-family:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:.1px}
+.wrap{max-width:560px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 40px}
+h1,h2,h3{font-family:"Mitr","IBM Plex Sans Thai",sans-serif;font-weight:500;margin:0;text-wrap:balance;letter-spacing:0}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:linear-gradient(var(--bg) 72%,transparent);
+  padding-block:16px 8px;margin-bottom:4px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.brandrow{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;flex:none;border-radius:14px;background:var(--primary-soft);
+  display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.logo svg{width:28px;height:28px}
+.brand .app{font-family:"Itim",cursive;font-size:25px;line-height:1.1;color:var(--fg)}
+.brand .sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.theme-btn{margin-left:auto;width:40px;height:40px;flex:none;border-radius:12px;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  display:grid;place-items:center;cursor:pointer;transition:.18s}
+.theme-btn:hover{color:var(--fg);border-color:var(--border-strong)}
+.theme-btn svg{width:20px;height:20px}
+
+/* segmented origin toggle */
+.seg{display:flex;gap:4px;padding:4px;margin-top:14px;border-radius:14px;
+  background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.seg button{flex:1;border:0;background:transparent;cursor:pointer;
+  font-family:inherit;font-size:13.5px;font-weight:600;color:var(--muted);
+  padding:9px 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:.2s}
+.seg button svg{width:16px;height:16px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--primary-ink);box-shadow:var(--shadow-sm)}
+.seg button:focus-visible{outline:none;box-shadow:var(--ring)}
+
+.hint{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted);
+  margin-top:10px;padding:9px 12px;border-radius:11px;background:var(--surface-2);border:1px dashed var(--border-strong)}
+.hint svg{width:15px;height:15px;flex:none;margin-top:3px;color:var(--primary)}
+
+/* map card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow)}
+.mapcard{margin-top:16px;overflow:hidden}
+.mapsvg{display:block;width:100%;height:auto;background:
+  radial-gradient(120% 90% at 50% 0%,var(--c-cafe-soft) 0%,transparent 46%),var(--surface-2)}
+.legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:12px 16px 4px}
+.lg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.lg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+.readout{padding:14px 16px 16px}
+.ro-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ro-top .dest{font-family:"Mitr",sans-serif;font-size:16px;color:var(--fg)}
+.ro-arrow{color:var(--faint);font-size:13px}
+.ro-from{font-size:12.5px;color:var(--muted)}
+.ro-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:999px;padding:3px 10px;display:inline-flex;align-items:center;gap:5px}
+.chip svg{width:13px;height:13px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;
+  border:0;cursor:pointer;font-family:"Mitr",sans-serif;font-size:14.5px;font-weight:500;
+  color:#fff;background:var(--primary);padding:12px;border-radius:13px;text-decoration:none;
+  box-shadow:0 6px 16px -8px var(--primary);transition:.18s}
+.btn:hover{background:var(--primary-ink);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn svg{width:18px;height:18px}
+
+/* destination chips */
+.seclabel{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--faint);margin:22px 2px 10px}
+.destscroll{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.destscroll::-webkit-scrollbar{height:0}
+.dchip{flex:none;scroll-snap-align:start;cursor:pointer;background:var(--surface);
+  border:1px solid var(--border);border-radius:13px;padding:8px 12px 8px 8px;
+  display:flex;align-items:center;gap:8px;transition:.18s;font-family:inherit}
+.dchip:hover{border-color:var(--border-strong)}
+.dchip[aria-pressed="true"]{border-color:var(--primary);box-shadow:var(--ring)}
+.dchip .mini{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+.dchip .mini svg{width:19px;height:19px}
+.dchip .dt{text-align:left;line-height:1.15}
+.dchip .dt b{font-size:13px;font-weight:600;color:var(--fg);display:block}
+.dchip .dt span{font-size:11px;color:var(--muted)}
+
+/* day groups */
+.day{margin-top:26px}
+.dayhead{display:flex;align-items:center;gap:10px;margin:0 2px 12px}
+.daynum{width:30px;height:30px;flex:none;border-radius:10px;background:var(--primary-soft);
+  color:var(--primary-ink);font-family:"Mitr",sans-serif;font-size:15px;display:grid;place-items:center}
+.dayhead h2{font-size:16.5px}
+.dayhead .dsub{font-size:12px;color:var(--muted);margin-left:auto;font-weight:600}
+
+.stop{display:flex;gap:13px;padding:13px;border-radius:18px;margin-bottom:11px;
+  background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-sm);
+  cursor:pointer;transition:.18s;position:relative}
+.stop:hover{border-color:var(--border-strong);transform:translateY(-1px);box-shadow:var(--shadow)}
+.stop.sel{border-color:var(--primary);box-shadow:var(--ring)}
+.stop.info{cursor:default;background:var(--surface-2);box-shadow:none;border-style:dashed}
+.stop.info:hover{transform:none;box-shadow:none;border-color:var(--border-strong)}
+.thumb{width:62px;height:62px;flex:none;border-radius:15px;display:grid;place-items:center}
+.thumb svg{width:34px;height:34px}
+.sbody{flex:1;min-width:0}
+.srow1{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.stime{font-size:11.5px;font-weight:700;color:var(--primary-ink);background:var(--primary-soft);
+  border-radius:7px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.stag{font-size:11px;font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:1px 8px}
+.sname{font-family:"Mitr",sans-serif;font-size:15.5px;color:var(--fg);margin-top:5px;line-height:1.25}
+.sblurb{font-size:12.5px;color:var(--muted);margin-top:2px}
+.swarn{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--c-mookata);margin-top:6px;font-weight:600}
+.swarn svg{width:13px;height:13px;flex:none}
+.sactions{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+.sbtn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;cursor:pointer;
+  font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:10px;transition:.16s}
+.sbtn.go{color:#fff;background:var(--primary)}
+.sbtn.go:hover{background:var(--primary-ink)}
+.sbtn.ghost{color:var(--muted);background:transparent;border:1px solid var(--border)}
+.sbtn.ghost:hover{color:var(--fg);border-color:var(--border-strong)}
+.sbtn svg{width:14px;height:14px}
+.sdist{margin-left:auto;align-self:center;font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* schedule table */
+.sched{margin-top:2px}
+.schedcard{padding:14px 16px 16px;margin-bottom:12px}
+.schead{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.schead .daynum{width:27px;height:27px;border-radius:9px;font-size:13px}
+.schead h3{font-size:14.5px}
+.schead .sc-sub{font-size:11.5px;color:var(--muted);margin-left:auto;font-weight:600}
+.srw{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:baseline;
+  padding:9px 0;border-top:1px solid var(--border)}
+.srw .t{font-size:12.5px;font-weight:700;color:var(--primary-ink);font-variant-numeric:tabular-nums}
+.srw .a b{font-family:"Mitr",sans-serif;font-weight:500;font-size:13.5px;color:var(--fg)}
+.srw .a .tg{font-size:11px;color:var(--muted);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:999px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+.srw.is-info .a b{color:var(--muted)}
+footer{margin-top:30px;text-align:center;font-size:12px;color:var(--faint);line-height:1.7}
+footer b{color:var(--muted);font-weight:600}
+
+@keyframes dash{to{stroke-dashoffset:-22}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.routeline{stroke-dasharray:7 6;animation:dash 1.1s linear infinite}
+.pin-sel{animation:pop .35s ease}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brandrow">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10 L12 4 L20 10"/><path d="M6 9 V19 H18 V9"/>
+          <path d="M3 21 Q6 19.5 9 21 T15 21 T21 21"/>
+        </svg>
+      </div>
+      <div class="brand">
+        <div class="app">เดินเล่นเชียงคาน</div>
+        <div class="sub">ฐานที่พัก บ้านฮัก · ทริป 10–12 พ.ย.</div>
+      </div>
+      <button class="theme-btn" id="themeBtn" aria-label="สลับธีมสว่าง/มืด"></button>
+    </div>
+
+    <div class="seg" role="group" aria-label="เลือกจุดเริ่มเดินทาง">
+      <button id="mHome" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 L12 4 L20 10"/><path d="M6 9 V19 H18 V9"/></svg>
+        จากบ้านฮัก</button>
+      <button id="mMe" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Z"/></svg>
+        ตำแหน่งปัจจุบัน</button>
+    </div>
+    <div class="hint" id="modeHint"></div>
+  </header>
+
+  <div class="card mapcard">
+    <svg class="mapsvg" id="map" viewBox="0 0 360 250" role="img" aria-label="แผนที่ย่อถนนคนเดินเชียงคาน"></svg>
+    <div class="legend">
+      <span class="lg"><i style="background:var(--primary)"></i>ที่พัก (บ้านฮัก)</span>
+      <span class="lg"><i style="background:var(--c-food)"></i>ของกิน</span>
+      <span class="lg"><i style="background:var(--c-cafe)"></i>คาเฟ่</span>
+      <span class="lg"><i style="background:var(--c-mookata)"></i>หมูกระทะ</span>
+      <span class="lg"><i style="background:var(--c-walk)"></i>เดินเล่น</span>
+    </div>
+    <div class="readout">
+      <div class="ro-top">
+        <span class="ro-from" id="roFrom">บ้านฮัก</span>
+        <span class="ro-arrow">———</span>
+        <span class="dest" id="roDest">Banchef</span>
+      </div>
+      <div class="ro-meta" id="roMeta"></div>
+      <a class="btn" id="roBtn" target="_blank" rel="noopener"></a>
+    </div>
+  </div>
+
+  <div class="seclabel">ตารางเวลาแต่ละวัน</div>
+  <div class="sched" id="schedule"></div>
+
+  <div class="seclabel">เลือกจุดหมายบนแผนที่</div>
+  <div class="destscroll" id="destScroll"></div>
+
+  <div id="days"></div>
+
+  <footer>
+    <b>ปุ่มนำทางเปิด Google Maps แบบเดินเท้า</b><br>
+    ในเมืองเดินถึงหมด · โฮมฮักมีจักรยานฟรีให้ปั่น<br>
+    ภาพในแอปเป็นภาพประกอบ · กด “ดูรูป &amp; รีวิว” เพื่อดูรูปจริงใน Maps
+  </footer>
+</div>
+
+<script>
+const HOME={name:"บ้านฮัก (โฮมฮัก)",lat:17.8947324,lng:101.6605104,pid:"ChIJhxX1XKzHJjERMvF25QJXr1Q"};
+
+const ICON={
+  home:'<path d="M4 10 L12 4 L20 10"/><path d="M6 9.5 V19 H18 V9.5"/><path d="M10 19 V14 H14 V19"/>',
+  plate:'<ellipse cx="12" cy="15.5" rx="8" ry="2.6"/><path d="M6 15 A6 3.4 0 0 1 18 15"/><path d="M14 5 L10.5 13"/><path d="M16 6 L12.5 13"/>',
+  noodle:'<path d="M4 11 H20 A8 7 0 0 1 4 11Z"/><path d="M6.5 11 C8 7 9 7 10 11"/><path d="M10.5 11 C12 6 13 6 14 11"/><path d="M8 4.5 C8 3.8 8.8 3.8 8.8 3"/><path d="M15 4.5 C15 3.8 15.8 3.8 15.8 3"/>',
+  grill:'<path d="M4 14 A8 6 0 0 1 20 14"/><line x1="3" y1="14.2" x2="21" y2="14.2"/><path d="M8 5.5 C8 4.6 9 4.6 9 3.6"/><path d="M12 5 C12 4.1 13 4.1 13 3.1"/><path d="M16 5.5 C16 4.6 17 4.6 17 3.6"/><line x1="7" y1="15" x2="6" y2="19"/><line x1="17" y1="15" x2="18" y2="19"/>',
+  beer:'<path d="M7 7 H15 V19 A1.2 1.2 0 0 1 13.8 20.2 H8.2 A1.2 1.2 0 0 1 7 19Z"/><path d="M15 9 H17.2 A2.3 2.3 0 0 1 17.2 15 H15"/><line x1="7" y1="10.5" x2="15" y2="10.5"/><path d="M8 7 Q8 5.4 9.5 5.6 Q10 4 11.5 5 Q13.2 4.6 13.2 6.2 Q14.6 6 14.5 7"/>',
+  view:'<circle cx="12" cy="8.5" r="3"/><line x1="12" y1="2.6" x2="12" y2="4"/><line x1="5.6" y1="5.6" x2="6.6" y2="6.6"/><line x1="18.4" y1="5.6" x2="17.4" y2="6.6"/><path d="M3.5 16 Q7 13.5 10 16 T16.5 16 T20.5 16"/><path d="M3 19.5 Q7 17 11 19.5 T19.5 19.5"/>',
+  lantern:'<line x1="9" y1="3.5" x2="15" y2="3.5"/><path d="M8 6 Q12 3.8 16 6 Q17.4 10 16 14 Q12 16.2 8 14 Q6.6 10 8 6Z"/><line x1="10.5" y1="6" x2="10.5" y2="14"/><line x1="13.5" y1="6" x2="13.5" y2="14"/><line x1="11" y1="16" x2="11" y2="18"/><line x1="13" y1="16" x2="13" y2="18"/>',
+  fish:'<path d="M4 11 H20 A8 7 0 0 1 4 11Z"/><path d="M9 14.2 Q12 12.4 14.5 14.2 Q12 16 9 14.2Z"/><path d="M14.5 14.2 L16.6 13.2 V15.4Z"/><circle cx="10.4" cy="14" r=".5"/>',
+  cat:'<path d="M6.5 9 L5.5 4.8 L9.2 7.8"/><path d="M17.5 9 L18.5 4.8 L14.8 7.8"/><path d="M6.5 9 Q4.3 14 12 16 Q19.7 14 17.5 9 Q13.5 7 10.5 7 Q8 7 6.5 9Z"/><circle cx="9.6" cy="11" r=".7" fill="currentColor"/><circle cx="14.4" cy="11" r=".7" fill="currentColor"/><path d="M12 12.4 L11.2 13.4 H12.8Z" fill="currentColor"/><path d="M12 13.4 V14.4"/>',
+  flower:'<path d="M6 9.5 H16 V13 A4 4 0 0 1 12 17 H10 A4 4 0 0 1 6 13Z"/><path d="M16 10.5 H18 A2 2 0 0 1 18 14 H16"/><circle cx="11" cy="5.6" r="1.3"/><circle cx="8.6" cy="6.4" r="1.1"/><circle cx="13.4" cy="6.4" r="1.1"/><circle cx="11" cy="7.8" r="1.1"/><circle cx="11" cy="6.6" r=".7" fill="currentColor"/>',
+  cup:'<path d="M6 8.5 H16 V13 A4 4 0 0 1 12 17 H10 A4 4 0 0 1 6 13Z"/><path d="M16 9.5 H18 A2 2 0 0 1 18 13 H16"/><path d="M9 3.4 C9 4.4 8 4.4 9 5.8"/><path d="M12 3.4 C12 4.4 11 4.4 12 5.8"/>',
+  bowl:'<path d="M4 11 H20 A8 7 0 0 1 4 11Z"/><path d="M8 7 Q9 5 10 7"/><path d="M12 6.5 Q13 4.5 14 6.5"/>'
+};
+const CAT={food:{c:'var(--c-food)',s:'var(--c-food-soft)'},cafe:{c:'var(--c-cafe)',s:'var(--c-cafe-soft)'},
+  mookata:{c:'var(--c-mookata)',s:'var(--c-mookata-soft)'},walk:{c:'var(--c-walk)',s:'var(--c-walk-soft)'},
+  home:{c:'var(--primary)',s:'var(--primary-soft)'}};
+
+function ic(kind,stroke){return '<svg viewBox="0 0 24 24" fill="none" stroke="'+stroke+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+ICON[kind]+'</svg>';}
+
+const DAYS=[
+ {n:1,label:"อังคาร 10 พ.ย.",sub:"ถึงบ่าย · วันพักตัว",stops:[
+   {key:"home",info:true,time:"13:00",tag:"เช็กอิน",kind:"home",cat:"home",name:"ถึงบ้านฮัก เก็บของ",blurb:"ติดถนนคนเดิน ตรงข้าม 7-11 · มีจักรยานฟรี"},
+   {key:"banchef",time:"14:00",tag:"ข้าวเที่ยง",kind:"plate",cat:"food",name:"Banchef Chiangkhan",blurb:"ร้านโฮมมี่ อาหารตามสั่งอร่อย จานละ 50–60 บาท",lat:17.8935838,lng:101.655265,pid:"ChIJcVRo_JfHJjERWQ9uEEwQOw0"},
+   {key:"withaview",time:"15:30",tag:"คาเฟ่",kind:"view",cat:"cafe",name:"With A View Cafe’",blurb:"นั่งยาวๆ ริมโขง รอพระอาทิตย์ตกราว 6 โมง",lat:17.8962355,lng:101.6568744,pid:"ChIJYSIiTADHJjERXMhBgdKsl3Q"},
+   {key:"walk1",time:"17:30",tag:"เดินเล่น",kind:"lantern",cat:"walk",name:"ถนนคนเดินเชียงคาน",blurb:"ชิมของกินเล่น ของฝาก เดินเรื่อยๆ ไม่รีบ",lat:17.8959457,lng:101.6559866,pid:"ChIJO8G4Pl3HJjERnuZj46TUJqE"},
+   {key:"bon",time:"19:00",tag:"มื้อค่ำริมโขง",kind:"beer",cat:"food",name:"Bon Appetit",blurb:"นั่งริมน้ำ เบียร์เย็นๆ มีโต๊ะพูล บรรยากาศดี",lat:17.8930836,lng:101.6495786,pid:"ChIJaXi90AnHJjERpu5NOZifIjQ"}
+ ]},
+ {n:2,label:"พุธ 11 พ.ย.",sub:"เช้าชิล · เย็นหมูกระทะ",stops:[
+   {key:"alms",info:true,time:"06:30",tag:"กิจกรรมเช้า",kind:"bowl",cat:"home",name:"ตักบาตรข้าวเหนียว",blurb:"หน้าที่พักมีชุดให้ · บรรยากาศเช้าเชียงคาน"},
+   {key:"soisao",time:"07:30",tag:"ข้าวเช้า",kind:"noodle",cat:"food",name:"ข้าวเปียกเส้น ซอยเซา",blurb:"ของเช้าซิกเนเจอร์เมือง เส้นเหนียวนุ่ม",lat:17.8968768,lng:101.6599468,pid:"ChIJbd2-Xi3GJjERHn7MnNv8Mm0"},
+   {key:"heon",time:"12:30",tag:"ข้าวเที่ยงริมโขง",kind:"fish",cat:"food",name:"Heon Luangprabang",blurb:"อาหารหลวงพระบาง วิวแม่น้ำโขง",warn:"ปิดวันอังคาร (วันพุธเปิดปกติ)",lat:17.8958351,lng:101.6555037,pid:"ChIJ98K_kC3GJjER_HPn_xD3Gho"},
+   {key:"lemoon",time:"15:00",tag:"คาเฟ่แมว",kind:"cat",cat:"cafe",name:"Le’ Moon Home Cafe’",blurb:"กลางถนนคนเดิน มีแมว 2 ตัว เค้กเด็ด · ปิด 18:30",lat:17.8931017,lng:101.6595673,pid:"ChIJR4NBEnLHJjERNKU--PS-0mM"},
+   {key:"walk2",time:"17:30",tag:"เดินเล่น",kind:"lantern",cat:"walk",name:"ถนนคนเดิน (รอบสอง)",blurb:"เดินย่อยเรียกน้ำย่อยก่อนไปกินหมูกระทะ",lat:17.8959457,lng:101.6559866,pid:"ChIJO8G4Pl3HJjERnuZj46TUJqE"},
+   {key:"kongyoo",time:"19:30",tag:"มื้อค่ำ",kind:"grill",cat:"mookata",name:"หมูกระทะกงยู",blurb:"ซอย 7 ข้างวัดศรีคุณเมือง เซ็ต 300 อิ่ม 2 คน",lat:17.8937681,lng:101.6528282,pid:"ChIJvQJmdi3GJjERwpqJg-YmIxc"}
+ ]},
+ {n:3,label:"พฤหัส 12 พ.ย.",sub:"เช้าสบาย · เดินทางกลับ",stops:[
+   {key:"flowa",time:"09:00",tag:"กาแฟ + ของฝาก",kind:"flower",cat:"cafe",name:"Flowa’coffee",blurb:"คาเฟ่ในสวนน่ารัก กาแฟดี เค้กแครอทเด็ด",lat:17.8869813,lng:101.6514446,pid:"ChIJVyMhAjjHJjERUKGukaqwo0A"},
+   {key:"out",info:true,time:"11:00",tag:"เช็กเอาท์",kind:"home",cat:"home",name:"เก็บของ ขึ้นรถทัวร์กลับ",blurb:"สามล้อพาไปขึ้นรถที่แยกได้ · ออกก่อนเที่ยงรถไม่ติด"}
+ ]}
+];
+
+const STOPS=[];DAYS.forEach(d=>d.stops.forEach(s=>{if(!s.info)STOPS.push(s);}));
+
+/* geometry */
+function hav(a,b){const R=6371000,t=x=>x*Math.PI/180;
+  const dla=t(b.lat-a.lat),dlo=t(b.lng-a.lng);
+  const x=Math.sin(dla/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dlo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));}
+function distTxt(m){return m<1000?Math.round(m/10)*10+" ม.":(m/1000).toFixed(1)+" กม.";}
+function walkMin(m){return Math.max(1,Math.round(m/78));}
+
+/* projection for schematic map */
+const pts=[HOME,...STOPS];
+let la=pts.map(p=>p.lat),lo=pts.map(p=>p.lng);
+const minLa=Math.min(...la),maxLa=Math.max(...la),minLo=Math.min(...lo),maxLo=Math.max(...lo);
+const PADX=34,TOP=60,BOT=226;
+function proj(p){
+  const x=PADX+(p.lng-minLo)/(maxLo-minLo)*(360-2*PADX);
+  const y=TOP+(maxLa-p.lat)/(maxLa-minLa)*(BOT-TOP);
+  return {x,y};
+}
+STOPS.forEach(s=>{const q=proj(s);s.x=q.x;s.y=q.y;s.d=hav(HOME,s);});
+const H=proj(HOME);
+
+let mode="home";          // home | me
+let selKey=STOPS[0].key;   // default Banchef
+const byKey=k=>STOPS.find(s=>s.key===k);
+
+/* URLs */
+function dirUrl(s){const b="https://www.google.com/maps/dir/?api=1";
+  const dest="&destination="+s.lat+","+s.lng+(s.pid?"&destination_place_id="+s.pid:"");
+  const org=mode==="home"?"&origin="+HOME.lat+","+HOME.lng:"";
+  return b+org+dest+"&travelmode=walking";}
+function placeUrl(s){return "https://www.google.com/maps/search/?api=1&query="+s.lat+","+s.lng+(s.pid?"&query_place_id="+s.pid:"");}
+
+/* icons for small ui */
+const SVG_GO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+const SVG_PHOTO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l4.5-4 3 2.5L15 11l5 5"/></svg>';
+const SVG_WALK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.6"/><path d="M13 8 L10 13 L12 15 L11 21"/><path d="M13 9 L16 12 L19 12"/><path d="M12 15 L8 18"/></svg>';
+const SVG_CLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>';
+const SVG_WARN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L22 20 H2Z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17.2" r=".4" fill="currentColor"/></svg>';
+
+/* MAP render */
+function renderMap(){
+  const m=document.getElementById('map');
+  const sel=byKey(selKey);
+  let s='';
+  // river band (north / top)
+  s+='<path d="M0 0 H360 V40 Q300 56 240 42 Q150 24 70 46 Q30 54 0 44 Z" fill="var(--river)" opacity=".9"/>';
+  s+='<path d="M20 30 Q70 22 120 30 T220 30 T320 28" stroke="var(--surface)" stroke-width="1.4" fill="none" opacity=".55"/>';
+  s+='<path d="M40 48 Q90 42 140 48 T250 46" stroke="var(--surface)" stroke-width="1.2" fill="none" opacity=".4"/>';
+  s+='<text x="12" y="20" font-family="Itim,cursive" font-size="12" fill="var(--c-cafe)" opacity=".85">แม่น้ำโขง</text>';
+  // route (home mode only)
+  if(mode==="home"){
+    const mx=(H.x+sel.x)/2, my=(H.y+sel.y)/2-18;
+    s+='<path d="M'+H.x+' '+H.y+' Q'+mx+' '+my+' '+sel.x+' '+sel.y+'" fill="none" stroke="var(--primary)" stroke-width="2.4" stroke-linecap="round" class="routeline" opacity=".9"/>';
+  }
+  // stop pins
+  STOPS.forEach(st=>{
+    const on=st.key===selKey;const col=CAT[st.cat].c;
+    s+='<g style="cursor:pointer" data-k="'+st.key+'">';
+    s+='<circle cx="'+st.x+'" cy="'+st.y+'" r="13" fill="transparent"/>';
+    if(on){s+='<circle cx="'+st.x+'" cy="'+st.y+'" r="8.5" fill="'+col+'" class="pin-sel"/><circle cx="'+st.x+'" cy="'+st.y+'" r="8.5" fill="none" stroke="var(--surface)" stroke-width="2"/>';}
+    else{s+='<circle cx="'+st.x+'" cy="'+st.y+'" r="5" fill="'+col+'" opacity=".92"/><circle cx="'+st.x+'" cy="'+st.y+'" r="5" fill="none" stroke="var(--surface)" stroke-width="1.5"/>';}
+    s+='</g>';
+  });
+  // home marker
+  s+='<g><path d="M'+H.x+' '+(H.y-14)+' C'+(H.x-8)+' '+(H.y-14)+' '+(H.x-8)+' '+(H.y-3)+' '+H.x+' '+(H.y+3)+' C'+(H.x+8)+' '+(H.y-3)+' '+(H.x+8)+' '+(H.y-14)+' '+H.x+' '+(H.y-14)+'Z" fill="var(--primary)"/>';
+  s+='<path d="M'+(H.x-3.3)+' '+(H.y-8)+' L'+H.x+' '+(H.y-10.6)+' L'+(H.x+3.3)+' '+(H.y-8)+' M'+(H.x-2.4)+' '+(H.y-8.4)+' V'+(H.y-5)+' H'+(H.x+2.4)+' V'+(H.y-8.4)+'" stroke="#fff" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>';
+  // labels: home + selected
+  function label(p,txt,dy,anchor){
+    const a=anchor||'middle';let tx=p.x;
+    if(a==='start')tx=p.x+11;if(a==='end')tx=p.x-11;
+    return '<text x="'+tx+'" y="'+(p.y+dy)+'" text-anchor="'+a+'" font-family="Mitr,sans-serif" font-size="10.5" fill="var(--fg)" paint-order="stroke" stroke="var(--surface)" stroke-width="3" stroke-linejoin="round">'+txt+'</text>';}
+  s+=label(H,'บ้านฮัก',-18);
+  const anc=sel.x>300?'end':(sel.x<60?'start':'middle');
+  s+=label(sel,shortName(sel),22,anc);
+  m.innerHTML=s;
+  m.querySelectorAll('g[data-k]').forEach(g=>g.addEventListener('click',()=>{selKey=g.getAttribute('data-k');renderAll();}));
+}
+function shortName(s){return s.name.replace("Chiangkhan","").replace(" Cafe’","").replace("’","’").trim().slice(0,16);}
+
+/* readout */
+function renderReadout(){
+  const sel=byKey(selKey);
+  document.getElementById('roDest').textContent=sel.name;
+  document.getElementById('roFrom').textContent=mode==="home"?"บ้านฮัก":"ตำแหน่งปัจจุบัน";
+  const meta=document.getElementById('roMeta');
+  if(mode==="home"){
+    meta.innerHTML='<span class="chip">'+SVG_WALK+distTxt(sel.d)+'</span><span class="chip">'+SVG_CLOCK+'เดิน ~'+walkMin(sel.d)+' นาที</span>';
+  }else{
+    meta.innerHTML='<span class="chip">'+SVG_GO+'ใช้ GPS ของเครื่องคุณ</span>';
+  }
+  const b=document.getElementById('roBtn');
+  b.href=dirUrl(sel);
+  b.innerHTML=SVG_GO+(mode==="home"?'เปิดเส้นทางจากบ้านฮัก':'นำทางจากตำแหน่งปัจจุบัน');
+}
+
+/* dest chips */
+function renderChips(){
+  const el=document.getElementById('destScroll');
+  el.innerHTML=STOPS.map(s=>{const col=CAT[s.cat];
+    return '<button class="dchip" data-k="'+s.key+'" aria-pressed="'+(s.key===selKey)+'">'+
+      '<span class="mini" style="background:'+col.s+';color:'+col.c+'">'+ic(s.kind,col.c)+'</span>'+
+      '<span class="dt"><b>'+shortName(s)+'</b><span>'+s.tag+'</span></span></button>';}).join('');
+  el.querySelectorAll('.dchip').forEach(c=>c.addEventListener('click',()=>{selKey=c.getAttribute('data-k');renderAll();
+    c.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}));
+}
+
+/* day cards */
+function renderDays(){
+  const root=document.getElementById('days');
+  root.innerHTML=DAYS.map(d=>{
+    const cards=d.stops.map(s=>{
+      const col=CAT[s.cat];
+      if(s.info){
+        return '<div class="stop info"><div class="thumb" style="background:'+col.s+';color:'+col.c+'">'+ic(s.kind,col.c)+'</div>'+
+          '<div class="sbody"><div class="srow1"><span class="stime">'+s.time+'</span><span class="stag">'+s.tag+'</span></div>'+
+          '<div class="sname">'+s.name+'</div><div class="sblurb">'+s.blurb+'</div></div></div>';
+      }
+      const warn=s.warn?'<div class="swarn">'+SVG_WARN+s.warn+'</div>':'';
+      return '<div class="stop'+(s.key===selKey?' sel':'')+'" data-k="'+s.key+'">'+
+        '<div class="thumb" style="background:'+col.s+';color:'+col.c+'">'+ic(s.kind,col.c)+'</div>'+
+        '<div class="sbody"><div class="srow1"><span class="stime">'+s.time+'</span><span class="stag">'+s.tag+'</span>'+
+          '<span class="sdist" data-dist="'+s.key+'"></span></div>'+
+        '<div class="sname">'+s.name+'</div><div class="sblurb">'+s.blurb+'</div>'+warn+
+        '<div class="sactions">'+
+          '<a class="sbtn go" data-go="'+s.key+'" target="_blank" rel="noopener">'+SVG_GO+'นำทาง</a>'+
+          '<a class="sbtn ghost" href="'+placeUrl(s)+'" target="_blank" rel="noopener">'+SVG_PHOTO+'ดูรูป & รีวิว</a>'+
+        '</div></div></div>';
+    }).join('');
+    return '<div class="day"><div class="dayhead"><span class="daynum">'+d.n+'</span>'+
+      '<h2>'+d.label+'</h2><span class="dsub">'+d.sub+'</span></div>'+cards+'</div>';
+  }).join('');
+  // wire
+  root.querySelectorAll('.stop[data-k]').forEach(c=>c.addEventListener('click',e=>{
+    if(e.target.closest('a'))return;
+    selKey=c.getAttribute('data-k');renderAll();
+    document.getElementById('map').scrollIntoView({block:'center',behavior:'smooth'});
+  }));
+  updateDayDynamic();
+}
+function updateDayDynamic(){
+  document.querySelectorAll('.stop[data-k]').forEach(c=>{
+    c.classList.toggle('sel',c.getAttribute('data-k')===selKey);});
+  document.querySelectorAll('[data-go]').forEach(a=>{a.href=dirUrl(byKey(a.getAttribute('data-go')));});
+  document.querySelectorAll('[data-dist]').forEach(el=>{
+    const s=byKey(el.getAttribute('data-dist'));
+    el.textContent=mode==="home"?(distTxt(s.d)+' · ~'+walkMin(s.d)+' น.'):'';
+  });
+}
+
+function renderAll(){
+  renderMap();renderReadout();
+  document.querySelectorAll('.dchip').forEach(c=>c.setAttribute('aria-pressed',c.getAttribute('data-k')===selKey));
+  updateDayDynamic();
+}
+
+/* mode toggle */
+function setMode(m){
+  mode=m;
+  document.getElementById('mHome').setAttribute('aria-pressed',m==="home");
+  document.getElementById('mMe').setAttribute('aria-pressed',m==="me");
+  document.getElementById('modeHint').innerHTML=(m==="home"
+    ? SVG_WALK+'<span>แผนที่แสดงเส้นทาง <b>เดินจากบ้านฮัก</b> ไปจุดที่เลือก พร้อมระยะทางโดยประมาณ</span>'
+    : SVG_GO+'<span>ปุ่มนำทางจะใช้ <b>ตำแหน่ง GPS ปัจจุบัน</b> ของคุณเปิดใน Google Maps (เหมาะตอนเดินอยู่จริง)</span>');
+  renderAll();
+}
+document.getElementById('mHome').addEventListener('click',()=>setMode('home'));
+document.getElementById('mMe').addEventListener('click',()=>setMode('me'));
+
+/* theme toggle */
+const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>';
+const MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"/></svg>';
+function sysDark(){return matchMedia('(prefers-color-scheme:dark)').matches;}
+function curDark(){const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':sysDark();}
+function paintTheme(){document.getElementById('themeBtn').innerHTML=curDark()?SUN:MOON;}
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  document.documentElement.setAttribute('data-theme',curDark()?'light':'dark');
+  try{localStorage.setItem('ck-theme',curDark()?'dark':'light');}catch(e){}
+  paintTheme();renderAll();
+});
+try{const sv=localStorage.getItem('ck-theme');if(sv)document.documentElement.setAttribute('data-theme',sv);}catch(e){}
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(!document.documentElement.getAttribute('data-theme')){paintTheme();renderAll();}});
+
+/* schedule table */
+function renderSchedule(){
+  document.getElementById('schedule').innerHTML=DAYS.map(d=>{
+    const rows=d.stops.map(s=>'<div class="srw'+(s.info?' is-info':'')+'"><span class="t">'+s.time+'</span>'+
+      '<span class="a"><b>'+s.name+'</b><span class="tg">'+s.tag+'</span></span></div>').join('');
+    return '<div class="card schedcard"><div class="schead"><span class="daynum">'+d.n+'</span>'+
+      '<h3>'+d.label+'</h3><span class="sc-sub">'+d.sub+'</span></div>'+rows+'</div>';
+  }).join('');
+}
+
+/* init */
+renderSchedule();renderChips();renderDays();setMode('home');paintTheme();
+</script>
+
+</body></html>

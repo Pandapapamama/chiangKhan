@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>เดินเล่นเชียงคาน</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Itim&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brandrow">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10 L12 4 L20 10"/><path d="M6 9 V19 H18 V9"/>
+          <path d="M3 21 Q6 19.5 9 21 T15 21 T21 21"/>
+        </svg>
+      </div>
+      <div class="brand">
+        <div class="app">เดินเล่นเชียงคาน</div>
+        <div class="sub">ฐานที่พัก บ้านฮัก · ทริป 10–12 พ.ย.</div>
+      </div>
+      <button class="theme-btn" id="themeBtn" aria-label="สลับธีมสว่าง/มืด"></button>
+    </div>
+  </header>
+
+  <!-- Only the origin toggle stays pinned while scrolling, so it takes little room on a phone -->
+  <div class="modebar">
+    <div class="seg" role="group" aria-label="เลือกจุดเริ่มเดินทาง">
+      <button id="mHome" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10 L12 4 L20 10"/><path d="M6 9 V19 H18 V9"/></svg>
+        จากบ้านฮัก</button>
+      <button id="mMe" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Z"/></svg>
+        ตำแหน่งปัจจุบัน</button>
+    </div>
+  </div>
+  <div class="hint" id="modeHint"></div>
+
+  <div class="card mapcard">
+    <div class="seg viewtabs" id="viewTabs" role="group" aria-label="เลือกมุมมองแผนที่" hidden>
+      <button data-view="sketch" aria-pressed="true">แผนที่ย่อ</button>
+      <button data-view="map" aria-pressed="false">แผนที่จริง</button>
+      <button data-view="street" aria-pressed="false">Street View</button>
+    </div>
+    <svg class="mapsvg" id="map" viewBox="0 0 360 250" role="img" aria-label="แผนที่ย่อถนนคนเดินเชียงคาน"></svg>
+    <div class="mapframe" id="gframe" hidden></div>
+    <div class="legend" id="legend">
+      <span class="lg"><i style="background:var(--primary)"></i>ที่พัก (บ้านฮัก)</span>
+      <span class="lg"><i style="background:var(--c-food)"></i>ของกิน</span>
+      <span class="lg"><i style="background:var(--c-cafe)"></i>คาเฟ่</span>
+      <span class="lg"><i style="background:var(--c-mookata)"></i>หมูกระทะ</span>
+      <span class="lg"><i style="background:var(--c-walk)"></i>เดินเล่น</span>
+    </div>
+    <div class="readout">
+      <div class="ro-top">
+        <span class="ro-from" id="roFrom">บ้านฮัก</span>
+        <span class="ro-arrow">———</span>
+        <span class="dest" id="roDest">Banchef</span>
+      </div>
+      <div class="ro-meta" id="roMeta"></div>
+      <a class="btn" id="roBtn" target="_blank" rel="noopener"></a>
+    </div>
+  </div>
+
+  <div class="seclabel">ตารางเวลาแต่ละวัน</div>
+  <div class="sched" id="schedule"></div>
+
+  <div class="seclabel">เลือกจุดหมายบนแผนที่</div>
+  <div class="destscroll" id="destScroll"></div>
+
+  <div id="days"></div>
+
+  <footer>
+    <b>ปุ่มนำทางเปิด Google Maps แบบเดินเท้า</b><br>
+    ในเมืองเดินถึงหมด · โฮมฮักมีจักรยานฟรีให้ปั่น<br>
+    ภาพในแอปเป็นภาพประกอบ · กด “ดูรูป &amp; รีวิว” เพื่อดูรูปจริงใน Maps
+  </footer>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
